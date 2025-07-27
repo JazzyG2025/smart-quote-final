@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Service Quote Calculator</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+        }
+
+        .form-section, .quote-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-weight: 500;
+            color: #34495e;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #cbd5e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle.active .toggle-slider {
+            transform: translateX(26px);
+        }
+
+        .materials-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .material-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 0.5rem;
+            align-items: end;
+            margin-bottom: 0.75rem;
+        }
+
+        .material-inputs {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .quote-breakdown {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .quote-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .quote-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            background: #f8f9fa;
+            margin: 0 -1.5rem -1.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .quote-label {
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        .quote-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .currency {
+            color: #27ae60;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .material-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .material-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Rate configuration data
+        const rates = {
+            Plumber: {
+                NSW: {
+                    "Normal Business Hours": { hourly: 85, callOut: 120 },
+                    "After Hours": { hourly: 120, callOut: 150 },
+                    "Saturday": { hourly: 95, callOut: 130 },
+                    "Sunday": { hourly: 110, callOut: 140 },
+                    "Public Holiday": { hourly: 130, callOut: 160 }
+                },
+                VIC: {
+                    "Normal Business Hours": { hourly: 80, callOut: 110 },
+                    "After Hours": { hourly: 115, callOut: 140 },
+                    "Saturday": { hourly: 90, callOut: 120 },
+                    "Sunday": { hourly: 105, callOut: 130 },
+                    "Public Holiday": { hourly: 125, callOut: 150 }
+                },
+                QLD: {
+                    "Normal Business Hours": { hourly: 75, callOut: 100 },
+                    "After Hours": { hourly: 110, callOut: 130 },
+                    "Saturday": { hourly: 85, callOut: 110 },
+                    "Sunday": { hourly: 100, callOut: 120 },
+                    "Public Holiday": { hourly: 120, callOut: 140 }
+                },
+                WA: {
+                    "Normal Business Hours": { hourly: 90, callOut: 130 },
+                    "After Hours": { hourly: 125, callOut: 160 },
+                    "Saturday": { hourly: 100, callOut: 140 },
+                    "Sunday": { hourly: 115, callOut: 150 },
+                    "Public Holiday": { hourly: 135, callOut: 170 }
+                },
+                SA: {
+                    "Normal Business Hours": { hourly: 78, callOut: 105 },
+                    "After Hours": { hourly: 112, callOut: 135 },
+                    "Saturday": { hourly: 88, callOut: 115 },
+                    "Sunday": { hourly: 103, callOut: 125 },
+                    "Public Holiday": { hourly: 123, callOut: 145 }
+                },
+                TAS: {
+                    "Normal Business Hours": { hourly: 70, callOut: 95 },
+                    "After Hours": { hourly: 105, callOut: 125 },
+                    "Saturday": { hourly: 80, callOut: 105 },
+                    "Sunday": { hourly: 95, callOut: 115 },
+                    "Public Holiday": { hourly: 115, callOut: 135 }
+                },
+                NT: {
+                    "Normal Business Hours": { hourly: 95, callOut: 135 },
+                    "After Hours": { hourly: 130, callOut: 165 },
+                    "Saturday": { hourly: 105, callOut: 145 },
+                    "Sunday": { hourly: 120, callOut: 155 },
+                    "Public Holiday": { hourly: 140, callOut: 175 }
+                }
+            },
+            Electrician: {
+                NSW: {
+                    "Normal Business Hours": { hourly: 90, callOut: 130 },
+                    "After Hours": { hourly: 125, callOut: 160 },
+                    "Saturday": { hourly: 100, callOut: 140 },
+                    "Sunday": { hourly: 115, callOut: 150 },
+                    "Public Holiday": { hourly: 135, callOut: 170 }
+                },
+                VIC: {
+                    "Normal Business Hours": { hourly: 85, callOut: 120 },
+                    "After Hours": { hourly: 120, callOut: 150 },
+                    "Saturday": { hourly: 95, callOut: 130 },
+                    "Sunday": { hourly: 110, callOut: 140 },
+                    "Public Holiday": { hourly: 130, callOut: 160 }
+                },
+                QLD: {
+                    "Normal Business Hours": { hourly: 80, callOut: 110 },
+                    "After Hours": { hourly: 115, callOut: 140 },
+                    "Saturday": { hourly: 90, callOut: 120 },
+                    "Sunday": { hourly: 105, callOut: 130 },
+                    "Public Holiday": { hourly: 125, callOut: 150 }
+                },
+                WA: {
+                    "Normal Business Hours": { hourly: 95, callOut: 140 },
+                    "After Hours": { hourly: 130, callOut: 170 },
+                    "Saturday": { hourly: 105, callOut: 150 },
+                    "Sunday": { hourly: 120, callOut: 160 },
+                    "Public Holiday": { hourly: 140, callOut: 180 }
+                },
+                SA: {
+                    "Normal Business Hours": { hourly: 83, callOut: 115 },
+                    "After Hours": { hourly: 118, callOut: 145 },
+                    "Saturday": { hourly: 93, callOut: 125 },
+                    "Sunday": { hourly: 108, callOut: 135 },
+                    "Public Holiday": { hourly: 128, callOut: 155 }
+                },
+                TAS: {
+                    "Normal Business Hours": { hourly: 75, callOut: 105 },
+                    "After Hours": { hourly: 110, callOut: 135 },
+                    "Saturday": { hourly: 85, callOut: 115 },
+                    "Sunday": { hourly: 100, callOut: 125 },
+                    "Public Holiday": { hourly: 120, callOut: 145 }
+                },
+                NT: {
+                    "Normal Business Hours": { hourly: 100, callOut: 145 },
+                    "After Hours": { hourly: 135, callOut: 175 },
+                    "Saturday": { hourly: 110, callOut: 155 },
+                    "Sunday": { hourly: 125, callOut: 165 },
+                    "Public Holiday": { hourly: 145, callOut: 185 }
+                }
+            },
+            "Carpenter/Handyman": {
+                NSW: {
+                    "Normal Business Hours": { hourly: 75, callOut: 100 },
+                    "After Hours": { hourly: 110, callOut: 130 },
+                    "Saturday": { hourly: 85, callOut: 110 },
+                    "Sunday": { hourly: 100, callOut: 120 },
+                    "Public Holiday": { hourly: 120, callOut: 140 }
+                },
+                VIC: {
+                    "Normal Business Hours": { hourly: 70, callOut: 95 },
+                    "After Hours": { hourly: 105, callOut: 125 },
+                    "Saturday": { hourly: 80, callOut: 105 },
+                    "Sunday": { hourly: 95, callOut: 115 },
+                    "Public Holiday": { hourly: 115, callOut: 135 }
+                },
+                QLD: {
+                    "Normal Business Hours": { hourly: 68, callOut: 90 },
+                    "After Hours": { hourly: 102, callOut: 120 },
+                    "Saturday": { hourly: 78, callOut: 100 },
+                    "Sunday": { hourly: 93, callOut: 110 },
+                    "Public Holiday": { hourly: 113, callOut: 130 }
+                },
+                WA: {
+                    "Normal Business Hours": { hourly: 80, callOut: 110 },
+                    "After Hours": { hourly: 115, callOut: 140 },
+                    "Saturday": { hourly: 90, callOut: 120 },
+                    "Sunday": { hourly: 105, callOut: 130 },
+                    "Public Holiday": { hourly: 125, callOut: 150 }
+                },
+                SA: {
+                    "Normal Business Hours": { hourly: 72, callOut: 95 },
+                    "After Hours": { hourly: 107, callOut: 125 },
+                    "Saturday": { hourly: 82, callOut: 105 },
+                    "Sunday": { hourly: 97, callOut: 115 },
+                    "Public Holiday": { hourly: 117, callOut: 135 }
+                },
+                TAS: {
+                    "Normal Business Hours": { hourly: 65, callOut: 85 },
+                    "After Hours": { hourly: 100, callOut: 115 },
+                    "Saturday": { hourly: 75, callOut: 95 },
+                    "Sunday": { hourly: 90, callOut: 105 },
+                    "Public Holiday": { hourly: 110, callOut: 125 }
+                },
+                NT: {
+                    "Normal Business Hours": { hourly: 85, callOut: 115 },
+                    "After Hours": { hourly: 120, callOut: 145 },
+                    "Saturday": { hourly: 95, callOut: 125 },
+                    "Sunday": { hourly: 110, callOut: 135 },
+                    "Public Holiday": { hourly: 130, callOut: 155 }
+                }
+            }
+        };
+
+        const QuoteCalculator = () => {
+            const [trade, setTrade] = useState('Plumber');
+            const [state, setState] = useState('NSW');
+            const [rateType, setRateType] = useState('Normal Business Hours');
+            const [includeCallOut, setIncludeCallOut] = useState(true);
+            const [hoursWorked, setHoursWorked] = useState('');
+            const [wasteDisposal, setWasteDisposal] = useState('');
+            const [materials, setMaterials] = useState([
+                { description: '', cost: '' },
+                { description: '', cost: '' },
+                { description: '', cost: '' },
+                { description: '', cost: '' }
+            ]);
+
+            const addMaterial = () => {
+                setMaterials([...materials, { description: '', cost: '' }]);
+            };
+
+            const removeMaterial = (index) => {
+                if (materials.length > 1) {
+                    setMaterials(materials.filter((_, i) => i !== index));
+                }
+            };
+
+            const updateMaterial = (index, field, value) => {
+                const updated = materials.map((material, i) =>
+                    i === index ? { ...material, [field]: value } : material
+                );
+                setMaterials(updated);
+            };
+
+            const calculateQuote = () => {
+                const currentRates = rates[trade]?.[state]?.[rateType];
+                if (!currentRates) return { labourCost: 0, callOutFee: 0, materialsTotal: 0, wasteDisposalCost: 0, totalCost: 0 };
+
+                const hours = parseFloat(hoursWorked) || 0;
+                const labourCost = hours * currentRates.hourly;
+                const callOutFee = includeCallOut ? currentRates.callOut : 0;
+                const materialsTotal = materials.reduce((sum, material) => sum + (parseFloat(material.cost) || 0), 0);
+                const wasteDisposalCost = parseFloat(wasteDisposal) || 0;
+                const totalCost = labourCost + callOutFee + materialsTotal + wasteDisposalCost;
+
+                return {
+                    labourCost,
+                    callOutFee,
+                    materialsTotal,
+                    wasteDisposalCost,
+                    totalCost
+                };
+            };
+
+            const quote = calculateQuote();
+
+            return (
+                <div className="app-container">
+                    <div className="header">
+                        <h1>Trade Service Quote Calculator</h1>
+                        <p>Calculate accurate quotes for plumbing, electrical, and carpentry services</p>
+                    </div>
+
+                    <div className="main-content">
+                        <div className="form-section">
+                            <h2 className="section-title">📋 Service Details</h2>
+                            
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Trade</label>
+                                    <select value={trade} onChange={(e) => setTrade(e.target.value)}>
+                                        <option value="Plumber">Plumber</option>
+                                        <option value="Electrician">Electrician</option>
+                                        <option value="Carpenter/Handyman">Carpenter/Handyman</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>State</label>
+                                    <select value={state} onChange={(e) => setState(e.target.value)}>
+                                        <option value="NSW">NSW</option>
+                                        <option value="VIC">VIC</option>
+                                        <option value="QLD">QLD</option>
+                                        <option value="WA">WA</option>
+                                        <option value="SA">SA</option>
+                                        <option value="TAS">TAS</option>
+                                        <option value="NT">NT</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="form-group full-width">
+                                <label>Rate Type</label>
+                                <select value={rateType} onChange={(e) => setRateType(e.target.value)}>
+                                    <option value="Normal Business Hours">Normal Business Hours</option>
+                                    <option value="After Hours">After Hours</option>
+                                    <option value="Saturday">Saturday</option>
+                                    <option value="Sunday">Sunday</option>
+                                    <option value="Public Holiday">Public Holiday</option>
+                                </select>
+                            </div>
+
+                            <div className="toggle-container">
+                                <div 
+                                    className={`toggle ${includeCallOut ? 'active' : ''}`}
+                                    onClick={() => setIncludeCallOut(!includeCallOut)}
+                                >
+                                    <div className="toggle-slider"></div>
+                                </div>
+                                <label>Include Call-Out Fee</label>
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Hours Worked</label>
+                                    <input
+                                        type="number"
+                                        step="0.25"
+                                        placeholder="Enter hours..."
+                                        value={hoursWorked}
+                                        onChange={(e) => setHoursWorked(e.target.value)}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Waste Disposal Cost</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        placeholder="Enter cost..."
+                                        value={wasteDisposal}
+                                        onChange={(e) => setWasteDisposal(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="materials-section">
+                                <h3 className="section-title">🔧 Materials</h3>
+                                
+                                {materials.map((material, index) => (
+                                    <div key={index} className="material-item">
+                                        <div className="material-inputs">
+                                            <input
+                                                type="text"
+                                                placeholder="Material description..."
+                                                value={material.description}
+                                                onChange={(e) => updateMaterial(index, 'description', e.target.value)}
+                                            />
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="Cost..."
+                                                value={material.cost}
+                                                onChange={(e) => updateMaterial(index, 'cost', e.target.value)}
+                                            />
+                                        </div>
+                                        {materials.length > 1 && (
+                                            <button
+                                                className="btn btn-danger"
+                                                onClick={() => removeMaterial(index)}
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                                
+                                <button className="btn btn-success" onClick={addMaterial}>
+                                    Add Material
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="quote-section">
+                            <h2 className="section-title">💰 Quote Breakdown</h2>
+                            
+                            <div className="quote-breakdown">
+                                <div className="quote-item">
+                                    <span className="quote-label">Labour Cost</span>
+                                    <span className="quote-value currency">${quote.labourCost.toFixed(2)}</span>
+                                </div>
+                                
+                                {includeCallOut && (
+                                    <div className="quote-item">
+                                        <span className="quote-label">Call-Out Fee</span>
+                                        <span className="quote-value currency">${quote.callOutFee.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                
+                                <div className="quote-item">
+                                    <span className="quote-label">Materials Total</span>
+                                    <span className="quote-value currency">${quote.materialsTotal.toFixed(2)}</span>
+                                </div>
+                                
+                                <div className="quote-item">
+                                    <span className="quote-label">Waste Disposal</span>
+                                    <span className="quote-value currency">${quote.wasteDisposalCost.toFixed(2)}</span>
+                                </div>
+                                
+                                <div className="quote-item">
+                                    <span className="quote-label">Total Cost (no GST)</span>
+                                    <span className="quote-value currency">${quote.totalCost.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<QuoteCalculator />, document.getElementById('root'));
+    </script>
+</body>
+</html>
